@@ -4,6 +4,7 @@ var SOCKET_CONNECTION = 'connection';
 var SOCKET_SEND_CHUNK = 'send chunk';
 var SOCKET_SUBMIT_ALIAS = 'submit alias';
 var SYSTEM_LOG = '#system_log';
+var SOCKET_DISCONNECT = 'disconnect';
 
 
 var aliasHolder = {};
@@ -28,5 +29,12 @@ server.sockets.on(SOCKET_CONNECTION, function(socket) {
       callback(false);
     }
   });
+
+  socket.on(SOCKET_DISCONNECT,function(){
+    console.log(aliasHolder[socket.alias], ' will be deleted');
+    delete(aliasHolder[socket.alias]);
+    console.log(aliasHolder[socket.alias],' after');
+
+  })
 
 });
