@@ -231,3 +231,13 @@ Broadcast a `"[offending nickname] has been unignored by [nickname] : [reason]"`
 ### Time stamps
 
 Add (human readable, pretty formatted) timestamps to each Chat Log entry.
+
+### Connect to other server
+
+On the nickname registration screen, add a text field to set a hostname and port of the server to connect to.
+
+The hostname and port should be defaulted to your own server.
+
+Display the status of the selected server to show if it's available to be connected to.
+
+When connecting, use the hostname and port to connect to and register your nickname. 
