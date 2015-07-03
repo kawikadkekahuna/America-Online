@@ -7,8 +7,15 @@
 }
 
 #chatlog{
+  margin-top:20px;
   width:600px;
   height:300px;
   overflow:auto;
   border: 1px solid black;
+}
+
+#system_log{
+  height:100px;
+  overflow:auto;
+  border:1px solid black;
 }

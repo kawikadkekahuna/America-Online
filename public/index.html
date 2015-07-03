@@ -2,10 +2,26 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
+  <link rel="stylesheet" type="text/css" href="css/styles.css">
   <title>America Online</title>
 </head>
 <body>
-  
+  <div id="system_log">System log</div>
+  <div id="registration_state">
+    <h2>Enter alias</h2>
+    <h3 id="registration_error" class ='error'></h3>
+      <form action="" id="user_registration">
+        <input type="text" id="alias">
+        <input type="submit" value="Submit!" >
+        </form>
+  </div>
+  <div id="chatroom_state">
+    <div id="chatlog"></div>
+    <form action="" id="chatroom_form">
+        <input type="text" id="chatroom_message" placeholder="Message...">
+        <input type="submit" value="Send Message!"></div>
+    </form>
+  </div>
   <script src="bower_components/jquery/dist/jquery.min.js"></script>
   <script type="text/javascript" src="bower_components/socket.io-client/socket.io.js"></script>
   <script type="text/javascript" src="js/client.js"></script>
