@@ -25,3 +25,7 @@
   overflow:auto;
   border:1px solid black;
 }
+
+#online_users span{
+  margin-right:10px;
+}

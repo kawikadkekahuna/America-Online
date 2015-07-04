@@ -13,7 +13,7 @@
   //////////////////////////////////////////
   var SOCKET_SEND_CHUNK = 'send chunk';
   var SOCKET_SUBMIT_ALIAS = 'submit alias';
-  var SOCKET_WATCH = 'watch';
+  var SOCKET_UPDATE_ALIAS_LIST = 'update alias list';
   //////////////////////////////////////////
   var SYSTEM_LOG = '#system_log';
   var CHATROOM_LOG = '#chatlog';
@@ -55,9 +55,8 @@
     sendChunk(source, chunk, destination);
   });
 
-  socket.on(SOCKET_WATCH, function(alias) {
-    addToSocketWatcher(alias);
-    console.log('in');
+  socket.on(SOCKET_UPDATE_ALIAS_LIST, function(aliasContainer) {
+    updateAliasList(aliasContainer);
   });
 
 
@@ -78,14 +77,18 @@
 
   }
 
-  function addToSocketWatcher(alias) {
-    var newChunk = $('<span>');
-    var alias = $('<b>', {
-      text: alias
-    });
-    newChunk.append(alias);
-    $('#online_users').append(newChunk);
+  function updateAliasList(aliasList){
+    console.log(aliasList);
+    $('#online_users').empty();
+    for(var k in aliasList){
+      var alias = $('<span> ',{
+        text:aliasList[k]
+      });
+
+      $('#online_users').append(alias);
+    }
   }
+
 
   $('#user_registration').submit(function(event) {
     event.preventDefault();
