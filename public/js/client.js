@@ -1,4 +1,4 @@
-$(function() {
+(function() {
   var SERVER_ADDRESS = 'http://localhost:8000';
   var SYSTEM = "[SYSTEM]";
   //EVENTS
@@ -13,6 +13,7 @@ $(function() {
   //////////////////////////////////////////
   var SOCKET_SEND_CHUNK = 'send chunk';
   var SOCKET_SUBMIT_ALIAS = 'submit alias';
+  var SOCKET_WATCH = 'watch';
   //////////////////////////////////////////
   var SYSTEM_LOG = '#system_log';
   var CHATROOM_LOG = '#chatlog';
@@ -50,9 +51,16 @@ $(function() {
     }
   });
 
-  socket.on(SOCKET_SEND_CHUNK, function(source, chunk,destination) {
-    sendChunk(source, chunk,destination);
+  socket.on(SOCKET_SEND_CHUNK, function(source, chunk, destination) {
+    sendChunk(source, chunk, destination);
   });
+
+  socket.on(SOCKET_WATCH, function(alias) {
+    addToSocketWatcher(alias);
+    console.log('in');
+  });
+
+
 
   function sendChunk(source, chunk, destination) {
     destination = destination || CHATROOM_LOG;
@@ -70,31 +78,41 @@ $(function() {
 
   }
 
+  function addToSocketWatcher(alias) {
+    var newChunk = $('<span>');
+    var alias = $('<b>', {
+      text: alias
+    });
+    newChunk.append(alias);
+    $('#online_users').append(newChunk);
+  }
+
   $('#user_registration').submit(function(event) {
     event.preventDefault();
     var alias = $('#alias').val();
     socket.emit(SOCKET_SUBMIT_ALIAS, alias, function(available) {
-      if(available){
+      if (available) {
         swapState();
-      }else{
+      } else {
         $('.error').html('Alias taken!  Please enter another name.');
       }
     });
 
   });
 
-  $('#chatroom_form').submit(function(event){
+
+  $('#chatroom_form').submit(function(event) {
     event.preventDefault();
     var message = $('#chatroom_message').val();
-    sendChunk('me',message);
-    socket.emit(SOCKET_SEND_CHUNK,message);
+    sendChunk('me', message);
+    socket.emit(SOCKET_SEND_CHUNK, message);
     $('#chatroom_message').val('');
   });
 
 
 
-///Functions
-  function swapState(){
+  ///Functions
+  function swapState() {
     $('#chatroom_state').show();
     $('#registration_state').hide();
   }
