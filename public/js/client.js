@@ -10,6 +10,7 @@
   var SOCKET_RECONNECT_ERROR = 'reconnect_error';
   var SOCKET_RECONNECT_FAILED = 'reconnect_failed';
   var SOCKET_ERROR = 'error';
+  var SOCKET_ALIAS;
   //////////////////////////////////////////
   var SOCKET_SEND_CHUNK = 'send chunk';
   var SOCKET_SUBMIT_ALIAS = 'submit alias';
@@ -52,7 +53,14 @@
   });
 
   socket.on(SOCKET_SEND_CHUNK, function(source, chunk, destination) {
+
+    // console.log(chunk);
+    if (chunk.indexOf('@' + SOCKET_ALIAS) !== -1) {
+
+
+    }
     sendChunk(source, chunk, destination);
+
   });
 
   socket.on(SOCKET_UPDATE_ALIAS_LIST, function(aliasContainer) {
@@ -63,13 +71,33 @@
 
   function sendChunk(source, chunk, destination) {
     destination = destination || CHATROOM_LOG;
+
     var newChunk = $('<p>');
+
     var source = $('<b>', {
       text: source
     });
-    var chunk = $('<span>', {
-      text: chunk
-    });
+
+    if (chunk.indexOf('@' + SOCKET_ALIAS) !== -1) {
+      var tmp = '@' + SOCKET_ALIAS;
+      var index = chunk.indexOf(tmp);
+      var front = chunk.substring(0, index);
+      console.log('SOCKET_ALIAS.length', SOCKET_ALIAS.length);
+      console.log('front', front);
+      var back = chunk.substring(index+SOCKET_ALIAS.length + 1, chunk.length);
+      console.log('back', back);
+
+      var chunk = $('<span>', {
+        html: front+'<span class="mentioned">@'+SOCKET_ALIAS+'</span>'+back
+          
+      });
+
+    } else {
+      var chunk = $('<span>', {
+        text: chunk
+      });
+    }
+
 
     newChunk.append(source);
     newChunk.append(chunk);
@@ -77,12 +105,16 @@
 
   }
 
-  function updateAliasList(aliasList){
+  function mentioned(chunk) {
+    '<span class="mentioned">';
+  }
+
+  function updateAliasList(aliasList) {
     console.log(aliasList);
     $('#online_users').empty();
-    for(var k in aliasList){
-      var alias = $('<span> ',{
-        text:aliasList[k]
+    for (var k in aliasList) {
+      var alias = $('<span> ', {
+        text: aliasList[k]
       });
 
       $('#online_users').append(alias);
@@ -96,6 +128,7 @@
     socket.emit(SOCKET_SUBMIT_ALIAS, alias, function(available) {
       if (available) {
         swapState();
+        SOCKET_ALIAS = alias;
       } else {
         $('.error').html('Alias taken!  Please enter another name.');
       }

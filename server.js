@@ -4,6 +4,7 @@ var SOCKET_CONNECTION = 'connection';
 var SOCKET_DISCONNECT = 'disconnect';
 var SOCKET_SEND_CHUNK = 'send chunk';
 var SOCKET_SUBMIT_ALIAS = 'submit alias';
+var SERVER_SEND_CHUNK = 'server';
 var SOCKET_UPDATE_ALIAS_LIST = 'update alias list';
 var SYSTEM_LOG = '#system_log';
 
@@ -32,10 +33,11 @@ server.sockets.on(SOCKET_CONNECTION, function(socket) {
   });
 
   socket.on(SOCKET_DISCONNECT, function() {
+    if(socket.alias){
     delete(aliasContainer[socket.alias]);
     socket.broadcast.emit(SOCKET_SEND_CHUNK, socket.alias, ' has left the chatroom.', SYSTEM_LOG);
     socket.broadcast.emit(SOCKET_UPDATE_ALIAS_LIST, aliasContainer);
-
-  })
+    }
+  });
 
 });

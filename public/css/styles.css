@@ -29,3 +29,8 @@
 #online_users span{
   margin-right:10px;
 }
+
+.mentioned{
+  color:red;
+  font-weight: bolder;
+}
