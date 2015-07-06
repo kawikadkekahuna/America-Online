@@ -11,25 +11,27 @@ var SERVER_DATA = 'data';
 var SERVER_POWER = '/';
 var SERVER_KICK = '/kick';
 
-var aliasContainer = {};
-var socketContainer = {};
+var aliasList = {};
+var socketContainer = [];
 
 var server = socketIO.listen(PORT);
 
 server.sockets.on(SOCKET_CONNECTION, function(socket) {
-  socketContainer[socket] = socket;
+  socketContainer.push(socket);
+
   socket.on(SOCKET_SEND_CHUNK, function(chunk) {
     socket.broadcast.emit(SOCKET_SEND_CHUNK, socket.alias, chunk);
 
   });
 
   socket.on(SOCKET_SUBMIT_ALIAS, function(alias, callback) {
-    if (!aliasContainer.hasOwnProperty(alias)) {
-      aliasContainer[alias] = alias;
+    if (!aliasList.hasOwnProperty(alias)) {
+      aliasList[alias] = alias;
       socket.alias = alias;
       socket.broadcast.emit(SOCKET_SEND_CHUNK, socket.alias, ' has joined the chatroom.', SYSTEM_LOG);
-      socket.emit(SOCKET_UPDATE_ALIAS_LIST, aliasContainer);
-      socket.broadcast.emit(SOCKET_UPDATE_ALIAS_LIST, aliasContainer);
+      socket.emit(SOCKET_UPDATE_ALIAS_LIST, aliasList);
+      socket.broadcast.emit(SOCKET_UPDATE_ALIAS_LIST, aliasList);
+      console.log(socket.alias, 'has conencted');
       callback(true);
     } else {
       callback(false);
@@ -37,11 +39,10 @@ server.sockets.on(SOCKET_CONNECTION, function(socket) {
   });
 
   socket.on(SOCKET_DISCONNECT, function() {
-    if (socket.alias) {
-      delete(aliasContainer[socket.alias]);
-      socket.broadcast.emit(SOCKET_SEND_CHUNK, socket.alias, ' has left the chatroom.', SYSTEM_LOG);
-      socket.broadcast.emit(SOCKET_UPDATE_ALIAS_LIST, aliasContainer);
-    }
+    delete(aliasList[socket.alias]);
+    console.log(aliasList);
+    socket.broadcast.emit(SOCKET_UPDATE_ALIAS_LIST,aliasList);
+    socket.broadcast.emit(SOCKET_SEND_CHUNK, socket.alias, ' has left the chatroom.', SYSTEM_LOG);
   });
 
 });
@@ -54,16 +55,16 @@ process.stdin.on(SERVER_DATA, function(chunk) {
     switch (command) {
 
       case SERVER_KICK:
-        for (var key in socketContainer) {
-          if (socketContainer[key].alias === destinationData) {
-            console.log('kick');
-            // delete(socketContainer[key]);
-            socketContainer[key].disconnect();
-            // console.log('socketContainer', socketContainer);
+
+        var socket = socketContainer.filter(function(currentSocket) {
+          if (currentSocket.alias === destinationData) {
+            currentSocket.disconnect();
+            // console.log(currentSocket.alias,'has disconnected');
           }
-        }
-        delete(aliasContainer[destinationData]);
+        });
+
         break;
+
 
     }
 

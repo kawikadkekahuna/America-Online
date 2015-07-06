@@ -18,20 +18,24 @@
   //////////////////////////////////////////
   var SYSTEM_LOG = '#system_log';
   var CHATROOM_LOG = '#chatlog';
+  var STATE;
+  var CHATROOM_STATE = 'chatroom state';
+  var REGISTRATION_STATE = 'registartion state';
 
   var socket = io.connect(SERVER_ADDRESS);
-  $('#chatroom_state').hide();
+  // swapState(REGISTRATION_STATE);
 
 
   socket.on(SOCKET_CONNECT, function() {
+    swapState(REGISTRATION_STATE);
     sendChunk(SYSTEM, 'Connected to ' + SERVER_ADDRESS, SYSTEM_LOG);
   });
   socket.on(SOCKET_DISCONNECT, function() {
-
-    sendChunk(SYSTEM, 'Disconneceted from ' + SERVER_ADDRESS, SYSTEM_LOG);
+    swapState(REGISTRATION_STATE);
+    sendChunk(SYSTEM, 'Disconnected from ' + SERVER_ADDRESS, SYSTEM_LOG);
   });
   socket.on(SOCKET_RECONNECT, function() {
-
+    swapState(REGISTRATION_STATE);
     sendChunk(SYSTEM, 'Sucessfully reconnected to ' + SERVER_ADDRESS, SYSTEM_LOG);
 
   });
@@ -63,8 +67,8 @@
 
   });
 
-  socket.on(SOCKET_UPDATE_ALIAS_LIST, function(aliasContainer) {
-    updateAliasList(aliasContainer);
+  socket.on(SOCKET_UPDATE_ALIAS_LIST, function(incomingList) {
+    updateAliasList(incomingList);
   });
 
 
@@ -84,12 +88,12 @@
       var front = chunk.substring(0, index);
       console.log('SOCKET_ALIAS.length', SOCKET_ALIAS.length);
       console.log('front', front);
-      var back = chunk.substring(index+SOCKET_ALIAS.length + 1, chunk.length);
+      var back = chunk.substring(index + SOCKET_ALIAS.length + 1, chunk.length);
       console.log('back', back);
 
       var chunk = $('<span>', {
-        html: front+'<span class="mentioned">@'+SOCKET_ALIAS+'</span>'+back
-          
+        html: front + '<span class="mentioned">@' + SOCKET_ALIAS + '</span>' + back
+
       });
 
     } else {
@@ -127,7 +131,7 @@
     var alias = $('#alias').val();
     socket.emit(SOCKET_SUBMIT_ALIAS, alias, function(available) {
       if (available) {
-        swapState();
+        swapState(CHATROOM_STATE);
         SOCKET_ALIAS = alias;
       } else {
         $('.error').html('Alias taken!  Please enter another name.');
@@ -148,9 +152,18 @@
 
 
   ///Functions
-  function swapState() {
-    $('#chatroom_state').show();
-    $('#registration_state').hide();
+  function swapState(state) {
+    switch (state) {
+      case REGISTRATION_STATE:
+        $('#chatroom_state').hide();
+        $('#registration_state').show();
+        break;
+      case CHATROOM_STATE:
+        $('#chatroom_state').show();
+        $('#registration_state').hide();
+        break;
+
+    }
   }
 
 })();
