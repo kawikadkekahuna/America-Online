@@ -21,10 +21,10 @@
   var STATE;
   var CHATROOM_STATE = 'chatroom state';
   var REGISTRATION_STATE = 'registartion state';
+  var SERVER_KICKED = 'server kicked';
 
   var socket = io.connect(SERVER_ADDRESS);
   // swapState(REGISTRATION_STATE);
-
 
   socket.on(SOCKET_CONNECT, function() {
     swapState(REGISTRATION_STATE);
@@ -69,6 +69,12 @@
 
   socket.on(SOCKET_UPDATE_ALIAS_LIST, function(incomingList) {
     updateAliasList(incomingList);
+  });
+
+  socket.on(SERVER_KICKED, function(info) {
+      if(info.target === SOCKET_ALIAS){
+        socket.disconnect();
+      }           
   });
 
 

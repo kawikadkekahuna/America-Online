@@ -10,6 +10,7 @@ var SYSTEM_LOG = '#system_log';
 var SERVER_DATA = 'data';
 var SERVER_POWER = '/';
 var SERVER_KICK = '/kick';
+var SERVER_KICKED = 'server kicked';
 
 var aliasList = {};
 var socketContainer = [];
@@ -41,7 +42,7 @@ server.sockets.on(SOCKET_CONNECTION, function(socket) {
   socket.on(SOCKET_DISCONNECT, function() {
     delete(aliasList[socket.alias]);
     console.log(aliasList);
-    socket.broadcast.emit(SOCKET_UPDATE_ALIAS_LIST,aliasList);
+    socket.broadcast.emit(SOCKET_UPDATE_ALIAS_LIST, aliasList);
     socket.broadcast.emit(SOCKET_SEND_CHUNK, socket.alias, ' has left the chatroom.', SYSTEM_LOG);
   });
 
@@ -50,16 +51,21 @@ process.stdin.on(SERVER_DATA, function(chunk) {
 
   chunk = chunk.toString().split('\n')[0];
   if (chunk.charAt(0) === SERVER_POWER) {
-    var command = chunk.substring(0, chunk.indexOf(' '));
-    var destinationData = chunk.substring(chunk.indexOf(' ') + 1, chunk.length);
+    var command = chunk.split(' ');
+    var target = command[1];
+    var message = command[2];
+    var testObj = {
+      target: target,
+      message: message
+    }
+    command = command[0] 
     switch (command) {
 
       case SERVER_KICK:
 
         var socket = socketContainer.filter(function(currentSocket) {
-          if (currentSocket.alias === destinationData) {
-            currentSocket.disconnect();
-            // console.log(currentSocket.alias,'has disconnected');
+          if (currentSocket.alias === target) {
+            server.sockets.emit(SERVER_KICKED, testObj);
           }
         });
 
