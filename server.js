@@ -53,12 +53,14 @@ process.stdin.on(SERVER_DATA, function(chunk) {
   if (chunk.charAt(0) === SERVER_POWER) {
     var command = chunk.split(' ');
     var target = command[1];
-    var message = command[2];
+    var message = chunk.replace(target, '');
+    message = message.replace(command[0], '');
     var testObj = {
       target: target,
       message: message
     }
-    command = command[0] 
+    command = command[0]
+    console.log('message', message);
     switch (command) {
 
       case SERVER_KICK:

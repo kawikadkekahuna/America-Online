@@ -18,9 +18,13 @@
   //////////////////////////////////////////
   var SYSTEM_LOG = '#system_log';
   var CHATROOM_LOG = '#chatlog';
-  var STATE;
+  var CHATROOM_STATE_EL = $('#chatroom_state');
+  var REGISTRATION_STATE_EL = $('#registration_state')
+  var KICKED_STATE_EL = $('#kicked_state');
+  //////////////////////////////////////////
   var CHATROOM_STATE = 'chatroom state';
   var REGISTRATION_STATE = 'registartion state';
+  var KICKED_STATE = 'kicked state';
   var SERVER_KICKED = 'server kicked';
 
   var socket = io.connect(SERVER_ADDRESS);
@@ -31,11 +35,9 @@
     sendChunk(SYSTEM, 'Connected to ' + SERVER_ADDRESS, SYSTEM_LOG);
   });
   socket.on(SOCKET_DISCONNECT, function() {
-    swapState(REGISTRATION_STATE);
     sendChunk(SYSTEM, 'Disconnected from ' + SERVER_ADDRESS, SYSTEM_LOG);
   });
   socket.on(SOCKET_RECONNECT, function() {
-    swapState(REGISTRATION_STATE);
     sendChunk(SYSTEM, 'Sucessfully reconnected to ' + SERVER_ADDRESS, SYSTEM_LOG);
 
   });
@@ -72,9 +74,14 @@
   });
 
   socket.on(SERVER_KICKED, function(info) {
-      if(info.target === SOCKET_ALIAS){
-        socket.disconnect();
-      }           
+    if (info.target === SOCKET_ALIAS) {
+      swapState(KICKED_STATE);
+      var msg = $('<p>',{
+        text: info.message
+      });
+      KICKED_STATE_EL.append(msg);
+      socket.disconnect();
+    }
   });
 
 
@@ -161,13 +168,20 @@
   function swapState(state) {
     switch (state) {
       case REGISTRATION_STATE:
-        $('#chatroom_state').hide();
-        $('#registration_state').show();
+        CHATROOM_STATE_EL.hide();
+        REGISTRATION_STATE_EL.show();
+        KICKED_STATE_EL.hide();
         break;
       case CHATROOM_STATE:
-        $('#chatroom_state').show();
-        $('#registration_state').hide();
+        CHATROOM_STATE_EL.show();
+        REGISTRATION_STATE_EL.hide();
+        KICKED_STATE_EL.hide();
         break;
+      case KICKED_STATE:
+        CHATROOM_STATE_EL.hide();
+        REGISTRATION_STATE_EL.hide();
+        KICKED_STATE_EL.show();
+
 
     }
   }
