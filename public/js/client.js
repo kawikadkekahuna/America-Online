@@ -61,10 +61,6 @@
   socket.on(SOCKET_SEND_CHUNK, function(source, chunk, destination) {
 
     // console.log(chunk);
-    if (chunk.indexOf('@' + SOCKET_ALIAS) !== -1) {
-
-
-    }
     sendChunk(source, chunk, destination);
 
   });
@@ -75,13 +71,16 @@
 
   socket.on(SERVER_KICKED, function(info) {
     if (info.target === SOCKET_ALIAS) {
+      sendChunk(SYSTEM, 'Failed to connect to ' + SERVER_ADDRESS, SYSTEM_LOG);
       swapState(KICKED_STATE);
-      var msg = $('<p>',{
+      var msg = $('<p>', {
         text: info.message
       });
       KICKED_STATE_EL.append(msg);
       socket.disconnect();
     }
+    sendChunk(SYSTEM, info.target + ' has been kicked for the following reason: ' + info.message, SYSTEM_LOG);
+
   });
 
 
@@ -94,6 +93,7 @@
     var source = $('<b>', {
       text: source
     });
+    console.log('source', source);
 
     if (chunk.indexOf('@' + SOCKET_ALIAS) !== -1) {
       var tmp = '@' + SOCKET_ALIAS;
