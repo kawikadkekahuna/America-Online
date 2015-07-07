@@ -22,6 +22,7 @@
   var REGISTRATION_STATE_EL = $('#registration_state')
   var KICKED_STATE_EL = $('#kicked_state');
   //////////////////////////////////////////
+  var SERVER_BAN_EVENT = 'server ban';
   var CHATROOM_STATE = 'chatroom state';
   var REGISTRATION_STATE = 'registartion state';
   var KICKED_STATE = 'kicked state';
@@ -81,6 +82,10 @@
       socket.emit(SOCKET_SEND_CHUNK, (' has been kicked for the following reason: ' + info.message),SYSTEM_LOG);
       socket.disconnect();
     }
+  });
+
+  socket.on(SERVER_BAN_EVENT,function(banList){
+    console.log('banList',banList);
   });
 
 
