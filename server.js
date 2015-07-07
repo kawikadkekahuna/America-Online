@@ -11,7 +11,9 @@ var SERVER_DATA = 'data';
 var SERVER_POWER = '/';
 var SERVER_KICK = '/kick';
 var SERVER_KICKED = 'server kicked';
+var SERVER_BAN = '/ban';
 
+var banList = {};
 var aliasList = {};
 var socketContainer = [];
 
@@ -20,8 +22,8 @@ var server = socketIO.listen(PORT);
 server.sockets.on(SOCKET_CONNECTION, function(socket) {
   socketContainer.push(socket);
 
-  socket.on(SOCKET_SEND_CHUNK, function(chunk,log) {
-    socket.broadcast.emit(SOCKET_SEND_CHUNK, socket.alias, chunk,log);
+  socket.on(SOCKET_SEND_CHUNK, function(chunk, log) {
+    socket.broadcast.emit(SOCKET_SEND_CHUNK, socket.alias, chunk, log);
 
   });
 
@@ -75,6 +77,12 @@ process.stdin.on(SERVER_DATA, function(chunk) {
           }
         });
         break;
+
+      case SERVER_BAN:
+
+        console.log(aliasList);
+        break;
+
     }
   }
 });
