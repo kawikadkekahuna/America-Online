@@ -25,6 +25,10 @@ server.sockets.on(SOCKET_CONNECTION, function(socket) {
 
   });
 
+  socket.on(SERVER_KICKED,function(info){
+     socket.emit(SERVER_KICKED,info);
+  });
+
   socket.on(SOCKET_SUBMIT_ALIAS, function(alias, callback) {
     if (!aliasList.hasOwnProperty(alias)) {
       aliasList[alias] = alias;
@@ -60,7 +64,6 @@ process.stdin.on(SERVER_DATA, function(chunk) {
       message: message
     }
     command = command[0]
-    console.log('message', message);
     switch (command) {
 
       case SERVER_KICK:

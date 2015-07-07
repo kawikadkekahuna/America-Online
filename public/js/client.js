@@ -26,6 +26,10 @@
   var REGISTRATION_STATE = 'registartion state';
   var KICKED_STATE = 'kicked state';
   var SERVER_KICKED = 'server kicked';
+  var SOCKET_MSG_CAP = 5;
+  var SOCKET_MSG_COUNT = 0;
+  var ONE_SECOND = 1000;
+  var SOCKET_INTERVAL_RUNNING = false;
 
   var socket = io.connect(SERVER_ADDRESS);
   // swapState(REGISTRATION_STATE);
@@ -34,6 +38,7 @@
     swapState(REGISTRATION_STATE);
     sendChunk(SYSTEM, 'Connected to ' + SERVER_ADDRESS, SYSTEM_LOG);
   });
+
   socket.on(SOCKET_DISCONNECT, function() {
     sendChunk(SYSTEM, 'Disconnected from ' + SERVER_ADDRESS, SYSTEM_LOG);
   });
@@ -55,12 +60,10 @@
       message(SYSTEM, err);
     } else {
       message(SYSTEM, 'An unknown error occured');
-    }
+    };
   });
 
   socket.on(SOCKET_SEND_CHUNK, function(source, chunk, destination) {
-
-    // console.log(chunk);
     sendChunk(source, chunk, destination);
 
   });
@@ -70,8 +73,8 @@
   });
 
   socket.on(SERVER_KICKED, function(info) {
+    console.log('info', info);
     if (info.target === SOCKET_ALIAS) {
-      sendChunk(SYSTEM, 'Failed to connect to ' + SERVER_ADDRESS, SYSTEM_LOG);
       swapState(KICKED_STATE);
       var msg = $('<p>', {
         text: info.message
@@ -79,8 +82,7 @@
       KICKED_STATE_EL.append(msg);
       socket.disconnect();
     }
-    sendChunk(SYSTEM, info.target + ' has been kicked for the following reason: ' + info.message, SYSTEM_LOG);
-
+    // socket.emit(SOCKET_SEND_CHUNK,)
   });
 
 
@@ -93,7 +95,6 @@
     var source = $('<b>', {
       text: source
     });
-    console.log('source', source);
 
     if (chunk.indexOf('@' + SOCKET_ALIAS) !== -1) {
       var tmp = '@' + SOCKET_ALIAS;
@@ -102,7 +103,7 @@
       console.log('SOCKET_ALIAS.length', SOCKET_ALIAS.length);
       console.log('front', front);
       var back = chunk.substring(index + SOCKET_ALIAS.length + 1, chunk.length);
-      console.log('back', back);
+      console.log('back', back);;
 
       var chunk = $('<span>', {
         html: front + '<span class="mentioned">@' + SOCKET_ALIAS + '</span>' + back
@@ -120,7 +121,7 @@
     newChunk.append(chunk);
     $(destination).append(newChunk).get(0).scrollTop = 1000000;
 
-  }
+  };
 
   function mentioned(chunk) {
     '<span class="mentioned">';
@@ -147,7 +148,7 @@
         swapState(CHATROOM_STATE);
         SOCKET_ALIAS = alias;
       } else {
-        $('.error').html('Alias taken!  Please enter another name.');
+        $('.error').html('Alias taken!  Please; enter another name.');
       }
     });
 
@@ -157,6 +158,12 @@
   $('#chatroom_form').submit(function(event) {
     event.preventDefault();
     var message = $('#chatroom_message').val();
+    SOCKET_MSG_COUNT++;
+    if (!SOCKET_INTERVAL_RUNNING) {
+      startSocketInterval(socket);
+    }
+    console.log(SOCKET_MSG_COUNT);;
+    console.log('SOCKET_INTERVAL_RUNNING', SOCKET_INTERVAL_RUNNING);
     sendChunk('me', message);
     socket.emit(SOCKET_SEND_CHUNK, message);
     $('#chatroom_message').val('');
@@ -165,6 +172,35 @@
 
 
   ///Functions
+  function startSocketInterval(socket) {
+    SOCKET_INTERVAL_RUNNING = true;
+    console.log('timeoutID', timeoutID);
+    var intervalID = setInterval(function() {
+      console.log(SOCKET_MSG_COUNT);
+      var infoObj = {
+        target: SOCKET_ALIAS,
+        message: 'You have exceeded the amount of messages allowed per second'
+      }
+      if (SOCKET_MSG_COUNT === SOCKET_MSG_CAP) {
+        socket.emit(SERVER_KICKED, infoObj);
+        clearInterval(intervalID);
+        clearInterval(timeoutID);
+        SOCKET_MSG_COUNT = 0;
+        // swapState(KICKED_STATE);
+      }
+    }, 50);
+
+    var timeoutID = setTimeout(function() {
+
+      SOCKET_MSG_COUNT = 0;
+      SOCKET_INTERVAL_RUNNING = false;
+      clearInterval(intervalID);
+    }, ONE_SECOND * 2)
+
+
+
+  }
+
   function swapState(state) {
     switch (state) {
       case REGISTRATION_STATE:
