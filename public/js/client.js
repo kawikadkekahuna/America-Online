@@ -78,6 +78,7 @@
         text: info.message
       });
       KICKED_STATE_EL.append(msg);
+      socket.emit(SOCKET_SEND_CHUNK, (' has been kicked for the following reason: ' + info.message),SYSTEM_LOG);
       socket.disconnect();
     }
   });

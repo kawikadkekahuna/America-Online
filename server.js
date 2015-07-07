@@ -20,13 +20,13 @@ var server = socketIO.listen(PORT);
 server.sockets.on(SOCKET_CONNECTION, function(socket) {
   socketContainer.push(socket);
 
-  socket.on(SOCKET_SEND_CHUNK, function(chunk) {
-    socket.broadcast.emit(SOCKET_SEND_CHUNK, socket.alias, chunk);
+  socket.on(SOCKET_SEND_CHUNK, function(chunk,log) {
+    socket.broadcast.emit(SOCKET_SEND_CHUNK, socket.alias, chunk,log);
 
   });
 
-  socket.on(SERVER_KICKED,function(info){
-     socket.emit(SERVER_KICKED,info);
+  socket.on(SERVER_KICKED, function(info) {
+    socket.emit(SERVER_KICKED, info);
   });
 
   socket.on(SOCKET_SUBMIT_ALIAS, function(alias, callback) {
@@ -44,10 +44,11 @@ server.sockets.on(SOCKET_CONNECTION, function(socket) {
   });
 
   socket.on(SOCKET_DISCONNECT, function() {
-    delete(aliasList[socket.alias]);
-    console.log(aliasList);
-    socket.broadcast.emit(SOCKET_UPDATE_ALIAS_LIST, aliasList);
-    socket.broadcast.emit(SOCKET_SEND_CHUNK, socket.alias, ' has left the chatroom.', SYSTEM_LOG);
+    if (socket.alias) {
+      delete(aliasList[socket.alias]);
+      socket.broadcast.emit(SOCKET_UPDATE_ALIAS_LIST, aliasList);
+      socket.broadcast.emit(SOCKET_SEND_CHUNK, socket.alias, ' has left the chatroom.', SYSTEM_LOG);
+    }
   });
 
 });
@@ -73,15 +74,7 @@ process.stdin.on(SERVER_DATA, function(chunk) {
             server.sockets.emit(SERVER_KICKED, testObj);
           }
         });
-
         break;
-
-
     }
-
-
-
   }
-
-
 });
