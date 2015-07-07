@@ -65,7 +65,6 @@
 
   socket.on(SOCKET_SEND_CHUNK, function(source, chunk, destination) {
     sendChunk(source, chunk, destination);
-
   });
 
   socket.on(SOCKET_UPDATE_ALIAS_LIST, function(incomingList) {
@@ -73,7 +72,6 @@
   });
 
   socket.on(SERVER_KICKED, function(info) {
-    console.log('info', info);
     if (info.target === SOCKET_ALIAS) {
       swapState(KICKED_STATE);
       var msg = $('<p>', {
@@ -82,7 +80,6 @@
       KICKED_STATE_EL.append(msg);
       socket.disconnect();
     }
-    // socket.emit(SOCKET_SEND_CHUNK,)
   });
 
 
