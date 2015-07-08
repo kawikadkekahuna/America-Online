@@ -57,6 +57,7 @@ server.sockets.on(SOCKET_CONNECTION, function(socket) {
       delete(connectedSocketIPList[socket.alias]);
       socket.broadcast.emit(SOCKET_UPDATE_ALIAS_LIST, socketAliasList);
       socket.broadcast.emit(SOCKET_SEND_CHUNK, socket.alias, ' has left the chatroom', SYSTEM_LOG);
+      console.log(socket.alias,' has been kicekd');
     }
   });
 

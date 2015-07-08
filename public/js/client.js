@@ -159,6 +159,19 @@
 
   });
 
+  function kickSocket(target, message) {
+    if (target === SOCKET_ALIAS) {
+      swapState(KICKED_STATE);
+      var msg = $('<p>', {
+        text: message
+      });
+      KICKED_STATE_EL.append(msg);
+      socket.emit(SOCKET_SEND_CHUNK, (' has been kicked for the following reason: ' + message), SYSTEM_LOG);
+      socket.disconnect();
+    }
+  }
+
+
   function startSocketInterval(socket) {
     SOCKET_INTERVAL_RUNNING = true;
     var intervalID = setInterval(function() {
