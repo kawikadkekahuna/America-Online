@@ -12,6 +12,8 @@ var SERVER_KICKED_EVENT = 'server kicked';
 var SERVER_BAN_EVENT = 'server ban';
 var SERVER_BAN_COMMAND = '/ban';
 var SERVER_KICK_COMMAND = '/kick';
+var SERVER_SWAP_STATE = 'server swap state';
+
 //LOGS
 var SYSTEM_LOG = '#system_log';
 
@@ -26,20 +28,53 @@ var server = socketIO.listen(PORT);
 
 server.sockets.on(SOCKET_CONNECTION, function(socket) {
   socketContainerArr.push(socket);
-
   socket.on(SOCKET_CREATE_ALIAS, function(alias, callback) {
-    if (!socketAliasList.hasOwnProperty(alias)) {
-      socketAliasList[alias] = alias;
+    var res = {};
+
+    if (!socketAliasList.hasOwnProperty(alias) && !banList.hasOwnProperty(alias)) {
       socket.alias = alias;
-      connectedSocketIPList[alias] = socket.handshake.address
+      socketAliasList[alias] = alias;
+      connectedSocketIPList[alias] = socket.handshake.address;
       socket.broadcast.emit(SOCKET_SEND_CHUNK, socket.alias, ' has joined the chatroom.', SYSTEM_LOG);
       socket.broadcast.emit(SOCKET_UPDATE_ALIAS_LIST, socketAliasList);
       socket.emit(SOCKET_UPDATE_ALIAS_LIST, socketAliasList);
-      console.log(alias, ' has connected');
-      callback(true);
-    } else {
-      callback(false);
+      res['created'] = true;
+      res['taken'] = false;
+      res['banned'] = false;
+      callback(res);
+    }else 
+    if (socketAliasList.hasOwnProperty(alias)) {
+      res['created'] = false;
+      res['taken'] = true;
+      res['banned'] = false;
+      callback(res);
+    }else
+
+    if(!socketAliasList.hasOwnProperty(alias) && banList.hasOwnProperty(alias)){
+      res['created'] = false;
+      res['taken'] = false;
+      res['banned'] = true;
+      callback(res);
     }
+    // if(socket.socketAliasList.hasOwnProperty(alias)){
+    //   res['created'] = false;
+    //   res['taken'] = true;
+    //   res['banned'] = false;
+    //   callback(res);
+    // }
+
+    // if (!socketAliasList.hasOwnProperty(alias) && !banList.hasOwnProperty(alias)) {
+    //   socket.alias = alias;
+    //   socketAliasList[alias] = alias;
+    //   connectedSocketIPList[alias] = socket.handshake.address;
+    //   socket.broadcast.emit(SOCKET_SEND_CHUNK, socket.alias, ' has joined the chatroom.', SYSTEM_LOG);
+    //   socket.broadcast.emit(SOCKET_UPDATE_ALIAS_LIST, socketAliasList);
+    //   socket.emit(SOCKET_UPDATE_ALIAS_LIST, socketAliasList);
+    //   console.log(alias, ' has connected');
+    //   callback(true);
+    // } else {
+    //   callback(false);
+    // }
 
   });
 
@@ -58,7 +93,6 @@ server.sockets.on(SOCKET_CONNECTION, function(socket) {
       delete(connectedSocketIPList[socket.alias]);
       socket.broadcast.emit(SOCKET_UPDATE_ALIAS_LIST, socketAliasList);
       socket.broadcast.emit(SOCKET_SEND_CHUNK, socket.alias, ' has left the chatroom', SYSTEM_LOG);
-      console.log(socket.alias, ' has been kicked');
     }
   });
 
@@ -72,7 +106,7 @@ process.stdin.on(SERVER_DATA, function(chunk) {
     var command = chunk.split(' ');
     var target = command[1];
     var message = chunk.replace(target, '');
-    message = message.replace(command[0],''); 
+    message = message.replace(command[0], '');
 
     command = command[0];
 
@@ -83,7 +117,6 @@ process.stdin.on(SERVER_DATA, function(chunk) {
         var socket = socketContainerArr.filter(function(currentSocket) {
           if (currentSocket.alias === target) {
             server.sockets.emit(SERVER_KICKED_EVENT, target, message);
-
           }
         });
         break;
@@ -92,12 +125,10 @@ process.stdin.on(SERVER_DATA, function(chunk) {
 
         var socket = socketContainerArr.filter(function(currentSocket) {
           if (currentSocket.alias === target) {
-            var ip = currentSocket.handshake.address;
-            connectedSocketIPList[ip] = currentSocket.alias
-            banList[ip] = currentSocket.alias;
-            console.log('banList', banList);
-            console.log(banList.hasOwnProperty(ip));
+            var ip = currentSocket.handshake.address
+            banList[currentSocket.alias] = ip;
             server.sockets.emit(SERVER_BAN_EVENT, target, message, ip);
+            process.stdout.write(currentSocket.alias + currentSocket.handshake.address + ' has been banned');
           }
         });
 

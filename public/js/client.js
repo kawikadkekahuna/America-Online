@@ -23,14 +23,19 @@
   var CHATROOM_STATE_EL = $('#chatroom_state');
   var REGISTRATION_STATE_EL = $('#registration_state')
   var KICKED_STATE_EL = $('#kicked_state');
+  var BANNED_STATE_EL = $('#banned_state');
+
   //////////////////////////////////////////
   var CHATROOM_STATE = 'chatroom state';
   var REGISTRATION_STATE = 'registartion state';
   var KICKED_STATE = 'kicked state';
+  var BANNED_STATE = 'banned state';
+  var SERVER_SWAP_STATE = 'server swap state';
   /////////////////////////////////////////
   var SOCKET_MSG_CAP = 5;
   var SOCKET_MSG_COUNT = 0;
   var ONE_SECOND = 1000;
+  var SOCKET_IS_BANNED = false;
   var SOCKET_INTERVAL_RUNNING = false;
 
   var SOCKET_ALIAS;
@@ -84,6 +89,8 @@
   socket.on(SERVER_BAN_EVENT, function(target, message, ip) {
     banSocket(target, message, ip);
   });
+
+  socket.on(SERVER_SWAP_STATE, function(state) {});
   /////////////////END SOCKET EVENTS///////////////////////////////////////////
 
   function sendChunk(source, chunk, log) {
@@ -131,15 +138,25 @@
     event.preventDefault();
 
     var alias = $('#alias').val();
-    socket.emit(SOCKET_CREATE_ALIAS, alias, function(available) {
-      if (available) {
+    socket.emit(SOCKET_CREATE_ALIAS, alias, function(res) {
+      if (res.created && !res.taken) {
+         console.log('res',res); 
         swapState(CHATROOM_STATE);
         SOCKET_ALIAS = alias;
-
-        // SOCKET_IP = socket.handshake.address;
-      } else {
+      }else if(res.taken){
+         console.log('restaken',res); 
         $('.error').html('Alias taken! Please enter another name');
-      }
+      }else{
+         console.log('resbanned',res); 
+        swapState(BANNED_STATE);
+      } 
+      // if (available) {
+
+      //   console.log('SOCKET_IS_BANNED', SOCKET_IS_BANNED);
+      //   // SOCKET_IP = socket.handshake.address;
+      // } else {
+      //   $('.error').html('Alias taken! Please enter another name');
+      // }
     });
   });
 
@@ -167,13 +184,20 @@
       });
       KICKED_STATE_EL.append(msg);
       socket.emit(SOCKET_SEND_CHUNK, (' has been kicked for the following reason: ' + message), SYSTEM_LOG);
-      // socket.disconnect();
+      socket.disconnect();
     }
   }
 
   function banSocket(target, message, ip) {
     if (target === SOCKET_ALIAS) {
-      
+      var msg = $('<p>', {
+        text: message
+      });
+      console.log('target', target);
+      swapState(BANNED_STATE);
+      socket.isBanned = true;
+      socket.emit(SOCKET_SEND_CHUNK, (' has been banned for the following reason: ' + message), SYSTEM_LOG);
+      socket.disconnect();
     }
   }
 
@@ -203,16 +227,29 @@
         CHATROOM_STATE_EL.hide();
         REGISTRATION_STATE_EL.show();
         KICKED_STATE_EL.hide();
+        BANNED_STATE_EL.hide();
+
         break;
       case CHATROOM_STATE:
         CHATROOM_STATE_EL.show();
         REGISTRATION_STATE_EL.hide();
         KICKED_STATE_EL.hide();
+        BANNED_STATE_EL.hide();
+
         break;
       case KICKED_STATE:
         CHATROOM_STATE_EL.hide();
         REGISTRATION_STATE_EL.hide();
+        BANNED_STATE_EL.hide();
         KICKED_STATE_EL.show();
+        break;
+
+      case BANNED_STATE:
+        CHATROOM_STATE_EL.hide();
+        REGISTRATION_STATE_EL.hide();
+        KICKED_STATE_EL.hide();
+        BANNED_STATE_EL.show();
+        break;
     }
   }
 
