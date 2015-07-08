@@ -81,8 +81,8 @@
   });
 
   //CREATE BAN EVENT
-  socket.on(SERVER_BAN_EVENT, function(target, message) {
-    // banSocket(target, message);
+  socket.on(SERVER_BAN_EVENT, function(target, message, ip) {
+    banSocket(target, message, ip);
   });
   /////////////////END SOCKET EVENTS///////////////////////////////////////////
 
@@ -167,7 +167,13 @@
       });
       KICKED_STATE_EL.append(msg);
       socket.emit(SOCKET_SEND_CHUNK, (' has been kicked for the following reason: ' + message), SYSTEM_LOG);
-      socket.disconnect();
+      // socket.disconnect();
+    }
+  }
+
+  function banSocket(target, message, ip) {
+    if (target === SOCKET_ALIAS) {
+      
     }
   }
 

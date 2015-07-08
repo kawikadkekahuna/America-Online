@@ -47,8 +47,8 @@ server.sockets.on(SOCKET_CONNECTION, function(socket) {
     socket.broadcast.emit(SOCKET_SEND_CHUNK, socket.alias, chunk, log);
   });
 
-  socket.on(SERVER_KICKED_EVENT, function(target,message) {
-    socket.emit(SERVER_KICKED_EVENT, target,message);
+  socket.on(SERVER_KICKED_EVENT, function(target, message) {
+    socket.emit(SERVER_KICKED_EVENT, target, message);
   });
 
   socket.on(SOCKET_DISCONNECT, function() {
@@ -72,7 +72,7 @@ process.stdin.on(SERVER_DATA, function(chunk) {
     var command = chunk.split(' ');
     var target = command[1];
     var message = chunk.replace(target, '');
-    message = message.replace(command[0], '');
+    message = message.replace(command[0],''); 
 
     command = command[0];
 
@@ -83,19 +83,21 @@ process.stdin.on(SERVER_DATA, function(chunk) {
         var socket = socketContainerArr.filter(function(currentSocket) {
           if (currentSocket.alias === target) {
             server.sockets.emit(SERVER_KICKED_EVENT, target, message);
+
           }
         });
         break;
 
       case SERVER_BAN_COMMAND:
 
-        var socket = socketContainer.filter(function(currentSocket) {
+        var socket = socketContainerArr.filter(function(currentSocket) {
           if (currentSocket.alias === target) {
-            var socketInfo = {
-              ip: currentSocket.handshake.address,
-              alias: currentSocket.alias
-            }
-            server.sockets.emit(SERVER_BAN_EVENT, socketInfo);
+            var ip = currentSocket.handshake.address;
+            connectedSocketIPList[ip] = currentSocket.alias
+            banList[ip] = currentSocket.alias;
+            console.log('banList', banList);
+            console.log(banList.hasOwnProperty(ip));
+            server.sockets.emit(SERVER_BAN_EVENT, target, message, ip);
           }
         });
 
