@@ -38,30 +38,26 @@ server.sockets.on(SOCKET_CONNECTION, function(socket) {
       socket.broadcast.emit(SOCKET_SEND_CHUNK, socket.alias, ' has joined the chatroom.', SYSTEM_LOG);
       socket.broadcast.emit(SOCKET_UPDATE_ALIAS_LIST, socketAliasList);
       socket.emit(SOCKET_UPDATE_ALIAS_LIST, socketAliasList);
-      // res['created'] = true;
-      // res['taken'] = false;
-      // res['banned'] = false;
       res = {
         created: true,
         banned: false
       }
       callback(res);
-      return;
-    } else if (banList.hasOwnProperty(alias)) {
+
+    }
+    if (banList.hasOwnProperty(alias)) {
       res = {
         created: false,
         banned: true
       }
       callback(res);
-      return;
-    } else if(!banList.hasOwnProperty(alias) && socketAliasList.hasOwnProperty(alias)){
+    }
+    if (!banList.hasOwnProperty(alias) && socketAliasList.hasOwnProperty(alias)) {
       res = {
         created: false,
         banned: false
       }
-
       callback(res);
-      return;
     }
 
 
