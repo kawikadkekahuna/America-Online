@@ -139,24 +139,14 @@
 
     var alias = $('#alias').val();
     socket.emit(SOCKET_CREATE_ALIAS, alias, function(res) {
-      if (res.created && !res.taken) {
-         console.log('res',res); 
+      if (res.created) {
         swapState(CHATROOM_STATE);
         SOCKET_ALIAS = alias;
-      }else if(res.taken){
-         console.log('restaken',res); 
-        $('.error').html('Alias taken! Please enter another name');
-      }else{
-         console.log('resbanned',res); 
+      } else if (res.banned) {
         swapState(BANNED_STATE);
-      } 
-      // if (available) {
-
-      //   console.log('SOCKET_IS_BANNED', SOCKET_IS_BANNED);
-      //   // SOCKET_IP = socket.handshake.address;
-      // } else {
-      //   $('.error').html('Alias taken! Please enter another name');
-      // }
+      } else{
+        $('.error').html('Alias taken! Please enter another name');
+      }
     });
   });
 

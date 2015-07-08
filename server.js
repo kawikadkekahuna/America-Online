@@ -38,43 +38,32 @@ server.sockets.on(SOCKET_CONNECTION, function(socket) {
       socket.broadcast.emit(SOCKET_SEND_CHUNK, socket.alias, ' has joined the chatroom.', SYSTEM_LOG);
       socket.broadcast.emit(SOCKET_UPDATE_ALIAS_LIST, socketAliasList);
       socket.emit(SOCKET_UPDATE_ALIAS_LIST, socketAliasList);
-      res['created'] = true;
-      res['taken'] = false;
-      res['banned'] = false;
+      // res['created'] = true;
+      // res['taken'] = false;
+      // res['banned'] = false;
+      res = {
+        created: true,
+        banned: false
+      }
       callback(res);
-    }else 
-    if (socketAliasList.hasOwnProperty(alias)) {
-      res['created'] = false;
-      res['taken'] = true;
-      res['banned'] = false;
+      return;
+    } else if (banList.hasOwnProperty(alias)) {
+      res = {
+        created: false,
+        banned: true
+      }
       callback(res);
-    }else
+      return;
+    } else if(!banList.hasOwnProperty(alias) && socketAliasList.hasOwnProperty(alias)){
+      res = {
+        created: false,
+        banned: false
+      }
 
-    if(!socketAliasList.hasOwnProperty(alias) && banList.hasOwnProperty(alias)){
-      res['created'] = false;
-      res['taken'] = false;
-      res['banned'] = true;
       callback(res);
+      return;
     }
-    // if(socket.socketAliasList.hasOwnProperty(alias)){
-    //   res['created'] = false;
-    //   res['taken'] = true;
-    //   res['banned'] = false;
-    //   callback(res);
-    // }
 
-    // if (!socketAliasList.hasOwnProperty(alias) && !banList.hasOwnProperty(alias)) {
-    //   socket.alias = alias;
-    //   socketAliasList[alias] = alias;
-    //   connectedSocketIPList[alias] = socket.handshake.address;
-    //   socket.broadcast.emit(SOCKET_SEND_CHUNK, socket.alias, ' has joined the chatroom.', SYSTEM_LOG);
-    //   socket.broadcast.emit(SOCKET_UPDATE_ALIAS_LIST, socketAliasList);
-    //   socket.emit(SOCKET_UPDATE_ALIAS_LIST, socketAliasList);
-    //   console.log(alias, ' has connected');
-    //   callback(true);
-    // } else {
-    //   callback(false);
-    // }
 
   });
 
