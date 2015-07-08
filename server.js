@@ -34,7 +34,7 @@ server.sockets.on(SOCKET_CONNECTION, function(socket) {
       connectedSocketIPList[alias] = socket.handshake.address
       socket.broadcast.emit(SOCKET_SEND_CHUNK, socket.alias, ' has joined the chatroom.', SYSTEM_LOG);
       socket.broadcast.emit(SOCKET_UPDATE_ALIAS_LIST, socketAliasList);
-      socket.emit(SOCKET_UPDATE_ALIAS_LIST,socketAliasList);
+      socket.emit(SOCKET_UPDATE_ALIAS_LIST, socketAliasList);
       console.log(alias, ' has connected');
       callback(true);
     } else {
@@ -47,17 +47,18 @@ server.sockets.on(SOCKET_CONNECTION, function(socket) {
     socket.broadcast.emit(SOCKET_SEND_CHUNK, socket.alias, chunk, log);
   });
 
-  socket.on(SERVER_KICKED_EVENT, function(info) {
-    socket.emit(SERVER_KICKED_EVENT, info);
+  socket.on(SERVER_KICKED_EVENT, function(target,message) {
+    socket.emit(SERVER_KICKED_EVENT, target,message);
   });
 
   socket.on(SOCKET_DISCONNECT, function() {
+
     if (socket.alias) {
       delete(socketAliasList[socket.alias]);
       delete(connectedSocketIPList[socket.alias]);
       socket.broadcast.emit(SOCKET_UPDATE_ALIAS_LIST, socketAliasList);
       socket.broadcast.emit(SOCKET_SEND_CHUNK, socket.alias, ' has left the chatroom', SYSTEM_LOG);
-      console.log(socket.alias,' has been kicekd');
+      console.log(socket.alias, ' has been kicked');
     }
   });
 

@@ -174,13 +174,10 @@
 
   function startSocketInterval(socket) {
     SOCKET_INTERVAL_RUNNING = true;
+    console.log('started');
     var intervalID = setInterval(function() {
-      var disconnectInfo = {
-        target: SOCKET_ALIAS,
-        message: 'Exceeded the amount of messages allowed per second'
-      }
       if (SOCKET_MSG_COUNT === SOCKET_MSG_CAP) {
-        socket.emit(SERVER_KICKED_EVENT, disconnectInfo);
+        socket.emit(SERVER_KICKED_EVENT, SOCKET_ALIAS, 'Exceeded the amount of messages allowed per second');
         clearInterval(intervalID);
         clearInterval(timeoutID);
         SOCKET_MSG_COUNT = 0;
@@ -191,7 +188,7 @@
       SOCKET_MSG_COUNT = 0;
       SOCKET_INTERVAL_RUNNING = false;
       clearInterval(intervalID);
-    }, ONE_SECOND * 2);
+    }, ONE_SECOND * 3);
   }
 
   function swapState(state) {
