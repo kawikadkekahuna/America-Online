@@ -19,13 +19,12 @@ var SYSTEM_LOG = '#system_log';
 var banList = {};
 var connectedSocketIPList = {};
 var socketAliasList = {};
-var socketContainerArr = [];
 
 
 var server = socketIO.listen(PORT);
 
 server.sockets.on(SOCKET_CONNECTION, function(socket) {
-  socketContainerArr.push(socket);
+
 
   socket.on(SOCKET_CREATE_ALIAS, function(alias, callback) {
     if (!socketAliasList.hasOwnProperty(alias)) {
@@ -34,7 +33,6 @@ server.sockets.on(SOCKET_CONNECTION, function(socket) {
       connectedSocketIPList[alias] = socket.handshake.address
       socket.broadcast.emit(SOCKET_SEND_CHUNK, socket.alias, ' has joined the chatroom.', SYSTEM_LOG);
       socket.broadcast.emit(SOCKET_UPDATE_ALIAS_LIST, socketAliasList);
-      socket.emit(SOCKET_UPDATE_ALIAS_LIST,socketAliasList);
       console.log(alias, ' has connected');
       callback(true);
     } else {
@@ -76,16 +74,16 @@ process.stdin.on(SERVER_DATA, function(chunk) {
 
     switch (command) {
 
-      case SERVER_KICK_COMMAND:
+      case SERVER_KICK:
 
-        var socket = socketContainerArr.filter(function(currentSocket) {
+        var socket = socketContainer.filter(function(currentSocket) {
           if (currentSocket.alias === target) {
-            server.sockets.emit(SERVER_KICKED_EVENT, target, message);
+            server.sockets.emit(SERVER_KICKED, target,message);
           }
         });
         break;
 
-      case SERVER_BAN_COMMAND:
+      case SERVER_BAN:
 
         var socket = socketContainer.filter(function(currentSocket) {
           if (currentSocket.alias === target) {

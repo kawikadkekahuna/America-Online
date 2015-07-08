@@ -12,10 +12,10 @@
   var SOCKET_ERROR = 'error';
   //////////////////////////////////////////
   var SOCKET_SEND_CHUNK = 'send chunk';
-  var SOCKET_CREATE_ALIAS = 'submit alias';
+  var SOCKET_SUBMIT_ALIAS = 'submit alias';
   var SOCKET_UPDATE_ALIAS_LIST = 'update alias list';
   var SERVER_BAN_EVENT = 'server ban';
-  var SERVER_KICKED_EVENT = 'server kicked';
+  var SERVER_KICKED = 'server kicked';
   //////////////////////////////////////////
   var SYSTEM_LOG = '#system_log';
   var CHATROOM_LOG = '#chatlog';
@@ -76,13 +76,13 @@
   });
 
   //CREATE KICKSOCKET EVENT
-  socket.on(SERVER_KICKED_EVENT, function(target, message) {
+  socket.on(SERVER_KICKED, function(target, message) {
     kickSocket(target, message);
   });
 
   //CREATE BAN EVENT
-  socket.on(SERVER_BAN_EVENT, function(target, message) {
-    // banSocket(target, message);
+  socket.on(SERVER_BAN, function(target, message) {
+    banSocket(target, message);
   });
   /////////////////END SOCKET EVENTS///////////////////////////////////////////
 
@@ -112,22 +112,24 @@
 
     newChunk.append(source);
     newChunk.append(chunk);
-    $(log).append(newChunk).get(0).scrollTop = 1000000;
+    $(destination).append(newChunk).get(0).scrollTop = 1000000;
   }
 
   function updateAliasList(newAliasList) {
+
     $('#online_users').empty();
 
     for (var key in newAliasList) {
       var alias = $('<span>', {
         text: newAliasList[key]
       });
+
       $('#online_users').append(alias);
     }
   }
 
 
-  $('#user_registration').submit(function(event) {
+  $('#user_registration').submit(function(event)) {
     event.preventDefault();
 
     var alias = $('#alias').val();
@@ -135,53 +137,51 @@
       if (available) {
         swapState(CHATROOM_STATE);
         SOCKET_ALIAS = alias;
-
         // SOCKET_IP = socket.handshake.address;
       } else {
         $('.error').html('Alias taken! Please enter another name');
       }
     });
-  });
+  }
 
-  $('#chatroom_form').submit(function(event) {
+  $('#chatroom_form').submit(function(event)){
 
     event.preventDefault();
     var message = $('#chatroom_message').val();
 
-    if (!SOCKET_INTERVAL_RUNNING) {
+    if(!SOCKET_INTERVAL_RUNNING){
       startSocketInterval(socket);
     }
 
-    sendChunk('me', message);
+    sendChunk('me',message);
     SOCKET_MSG_COUNT++;
-    socket.emit(SOCKET_SEND_CHUNK, message);
+    socket.emit(SOCKET_SEND_CHUNK,message);
     $('#chatroom_message').val('');
 
-  });
+  }
 
-  function startSocketInterval(socket) {
+  startSocketInterval(socket){
     SOCKET_INTERVAL_RUNNING = true;
-    var intervalID = setInterval(function() {
+    var intervalID = setInterval(function(){
       var disconnectInfo = {
-        target: SOCKET_ALIAS,
+        target: SOCKET_ALIAS
         message: 'Exceeded the amount of messages allowed per second'
       }
-      if (SOCKET_MSG_COUNT === SOCKET_MSG_CAP) {
-        socket.emit(SERVER_KICKED_EVENT, disconnectInfo);
+      if(SOCKET_MSG_COUNT === SOCKET_MSG_CAP){
+        socket.emit(SERVER_KICKED_EVENT,disconnectInfo);
         clearInterval(intervalID);
         clearInterval(timeoutID);
         SOCKET_MSG_COUNT = 0;
       }
-    }, 50);
+    },50);
 
-    var timeoutID = setTimeout(function() {
+    var timeoutID = setTimeout(function(){
       SOCKET_MSG_COUNT = 0;
       SOCKET_INTERVAL_RUNNING = false;
       clearInterval(intervalID);
-    }, ONE_SECOND * 2);
+    },ONE_SECOND * 2);
   }
-
-  function swapState(state) {
+    function swapState(state) {
     switch (state) {
       case REGISTRATION_STATE:
         CHATROOM_STATE_EL.hide();
